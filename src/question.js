@@ -24,6 +24,39 @@ export class Question {
         const list = document.getElementById('questions-block')
         list.innerHTML = contentHtml
     }
+
+    static fetch(token) {
+        if (!token) {
+            return Promise.resolve(`<p class="error">У вас нет токена. (Неправильно введены эл. почта или пароль).</p>`)
+        }
+        return fetch(`https://questions-f01a0.firebaseio.com/questions.json?auth=${token}`)
+            .then(response => response.json())
+            .then(response => {
+                if (response && response.error) {
+                    return `<p class="error">Ошибка при загрузке данных с сервера: ${response.error}</p>`
+                }
+
+                return response
+                    ? Object.keys(response)
+                        .map(key => ({
+                            ...response[key],
+                            id: key}))
+                    : []
+
+            })
+    }
+
+    static listToHtml(questions){
+        return questions.length > 0
+            ? `<ol>${questions.map(question => {
+                return `<li>${question.text}
+                    [
+                    ${new Date(question.date).toLocaleDateString()} 
+                    ${new Date(question.date).toLocaleTimeString()}
+                    ]</li>`
+                    }).join('')}</ol>`
+            : `<p>Вопросов пока нет</p>`
+    }
 }
 
 function addToLocalStorage(question) {
